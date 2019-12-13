@@ -1,0 +1,92 @@
+# Avant de commencer:  [YOUR_PROJECT_ID]=   pubsub-261015
+# Create a new project:
+gcloud projects create [YOUR_PROJECT_ID] --set-as-default
+# Verify the project was created:
+gcloud projects describe [YOUR_PROJECT_ID]
+# Initialize your App Engine app with your project and choose its region:
+gcloud app create --project=[YOUR_PROJECT_ID]
+# Make sure billing is enabled for your project. A billing account needs to be linked to your project in order for the # application to be deployed to App Engine.
+
+
+# 1. Cloner l'exemple d'application:
+
+git clone https://github.com/GoogleCloudPlatform/java-docs-samples
+cd java-docs-samples/flexible/pubsub
+
+# 2. Setup
+# Creating a topic and subscription
+# Replace YOUR_TOKEN with a secret random token. The push endpoint uses this to verify requests.
+
+gcloud pubsub topics create YOUR_TOPIC_NAME [firstTopic]
+gcloud pubsub subscriptions create YOUR_SUBSCRIPTION_NAME \ [sara]
+    --topic YOUR_TOPIC_NAME \
+    --push-endpoint \
+    https://YOUR_PROJECT_ID.appspot.com/pubsub/push?token=YOUR_TOKEN \
+    --ack-deadline 10
+    
+gcloud pubsub topics create firstTopic
+gcloud pubsub subscriptions create sara \
+    --topic firstTopic \
+    --push-endpoint \
+    https://pubsub-261015.appspot.com/pubsub/push?token=YOUR_TOKEN \
+    --ack-deadline 10    
+    
+# 3. Run
+# Set the following environment variables and run using shown Maven command. You can then direct your browser to http://localhost:8080/
+
+
+export PUBSUB_TOPIC=<your-topic-name>
+export PUBSUB_VERIFICATION_TOKEN=<your-verification-token>
+mvn jetty:run
+
+
+
+# 4. Setting environment variables
+# Edit the app.yaml file to set the environment variables for your topic and verification token:
+
+# env_variables:
+  PUBSUB_TOPIC: <your-topic-name>
+  # This token is used to verify that requests originate from your
+  # application. It can be any sufficiently random string.
+  PUBSUB_VERIFICATION_TOKEN: <your-verification-token>
+********************************************************************************
+# Code Review
+
+The sample app uses the values you set in the app.yaml file to configure environment variables. 
+The sample app maintains a Cloud Datastore database instance to store messages. 
+    The PubSubPush servlet receives pushed messages and adds them to the messageRepository database instance.
+    The PubSubPublish servlet interacts with the App Engine web app to publish new messages and display received messages.
+********************************************************************************
+# Running the sample locally
+
+mvn clean package
+export PUBSUB_VERIFICATION_TOKEN=YOUR_TOKEN export PUBSUB_TOPIC=forstTopic 
+mvn jetty:run
+
+# Simulating push notifications
+# The application can send messages locally, but it is not able to receive push messages locally. You can, however, 
+# simulate a push message by making an HTTP request to the local push notification endpoint. The sample includes the 
+# file sample_message.json.[{postman test}]
+
+curl -H "Content-Type: application/json" -i --data @sample_message.json "localhost:8080/pubsub/push?token=[your-token]"
+
+***************************
+# Add Project-Id in POM:
+<plugin>
+  <groupId>com.google.cloud.tools</groupId>
+  <artifactId>appengine-maven-plugin</artifactId>
+  <version>2.0.0-rc2</version>
+  <configuration>
+    <deploy.projectId>something</deploy.projectId>
+    <deploy.version>something</deploy.version>
+  </configuration>
+</plugin>
+*****************************************************************
+# Exécuter sur App Engine:
+# exécutez la commande suivante à partir du répertoire où se trouve votre fichier app.yaml :
+
+mvn appengine:deploy
+
+*******************************
+
+https://pubsub-261015.appspot.com/
